@@ -5,17 +5,9 @@ public enum EventType {
   VIREMENT("virement"),
   VERSEMENT("Versement d'argent");
 
-  private String type;
+EventType(String string) {
+	
+}
 
-  EventType(String type) {
-    this.type = type;
-  }
 
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
 }

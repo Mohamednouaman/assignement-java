@@ -1,7 +1,5 @@
 package ma.octo.assignement.web;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -18,43 +16,46 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ma.octo.assignement.domain.Compte;
 import ma.octo.assignement.domain.Utilisateur;
-import ma.octo.assignement.domain.Virement;
+import ma.octo.assignement.domain.Versement;
 import ma.octo.assignement.domain.util.EventType;
-import ma.octo.assignement.dto.VirementDto;
+import ma.octo.assignement.dto.VersementDto;
 import ma.octo.assignement.exceptions.CompteNonExistantException;
 import ma.octo.assignement.exceptions.SoldeDisponibleInsuffisantException;
 import ma.octo.assignement.exceptions.TransactionException;
 import ma.octo.assignement.repository.CompteRepository;
 import ma.octo.assignement.repository.UtilisateurRepository;
-import ma.octo.assignement.repository.VirementRepository;
+import ma.octo.assignement.repository.VersementRepository;
 import ma.octo.assignement.service.IAutiService;
-import ma.octo.assignement.service.IServiceVirement;
+import ma.octo.assignement.service.IServiceVersement;
 
 @RestController
-@RequestMapping("/virements")//added by me
-class VirementController {
+@RequestMapping("/versement")
+public class VersementController {
+
+	
 
 
 
     Logger LOGGER = LoggerFactory.getLogger(VirementController.class);
 
     @Autowired
-    private VirementRepository   virementRepository;
+    private VersementRepository   versementRepository;
     @Autowired
     private IAutiService autiService;
     @Autowired
-    private IServiceVirement  serviceVirement;
+    private IServiceVersement  serviceVersement;
+    
     @Autowired
     private CompteRepository compteRepository;
     @Autowired
     private UtilisateurRepository utilisateurRepository;
   
 
-    @GetMapping("/lister_virements")
-    List<Virement> loadAll() {
-        List<Virement> all = virementRepository.findAll();
+    @GetMapping("/lister_versements")
+    List<Versement> loadAll() {
+        List<Versement> all = versementRepository.findAll();
         
-        System.out.println("appel au lister virements");
+
         if (CollectionUtils.isEmpty(all)) {
             return null;
         } else {
@@ -62,7 +63,7 @@ class VirementController {
         }
     }
 
-    @GetMapping("/lister_comptes")
+    @GetMapping("lister_comptes")
     List<Compte> loadAllCompte() {
         List<Compte> all = compteRepository.findAll();
 
@@ -73,7 +74,7 @@ class VirementController {
         }
     }
 
-    @GetMapping("/lister_utilisateurs")
+    @GetMapping("lister_utilisateurs")
     List<Utilisateur> loadAllUtilisateur() {
         List<Utilisateur> all = utilisateurRepository.findAll();
 
@@ -84,16 +85,18 @@ class VirementController {
         }
     }
 
-    @PostMapping("/executerVirements")
+    @PostMapping("/executerVersements")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createTransaction(@RequestBody VirementDto virementDto)
+    public void createTransaction(@RequestBody VersementDto versementDto)
             throws SoldeDisponibleInsuffisantException, CompteNonExistantException, TransactionException {
-
-    	     serviceVirement.operationVirement(virementDto);     
+           
+    	    serviceVersement.operationVersement(versementDto);     
     	
-             autiService.auditOperation("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
-                        .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement()
-                        .doubleValue(),EventType.VIREMENT);
+             autiService.auditOperation("Versement depuis " + versementDto.getNom_prenom_emetteur() + " vers " + versementDto
+                        .getRibCompteBeneficiaire() + " d'un montant de " + versementDto.getMontantVersement()
+                        .doubleValue(),EventType.VERSEMENT);
     }
-
+	
+	
+	
 }

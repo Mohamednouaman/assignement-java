@@ -10,8 +10,14 @@ public class VirementMapper {
     public static VirementDto map(Virement virement) {
         virementDto = new VirementDto();
         virementDto.setNrCompteEmetteur(virement.getCompteEmetteur().getNrCompte());
+       
         virementDto.setDate(virement.getDateExecution());
-        virementDto.setMotif(virement.getMotifVirement());
+        
+        virementDto.setMotif(virement.getMotifOperation());
+        
+        virementDto.setMontantVirement(virement.getMontantOperation());
+        
+        virementDto.setNrCompteBeneficiaire(virement.getCompteBeneficiaire().getNrCompte());
 
         return virementDto;
 
