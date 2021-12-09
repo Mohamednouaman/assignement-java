@@ -1,12 +1,13 @@
 package ma.octo.assignement.serviceImpl;
 
 import java.math.BigDecimal;
-
+import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import ma.octo.assignement.domain.Compte;
 import ma.octo.assignement.domain.Virement;
@@ -15,7 +16,6 @@ import ma.octo.assignement.exceptions.CompteNonExistantException;
 import ma.octo.assignement.exceptions.SoldeDisponibleInsuffisantException;
 import ma.octo.assignement.exceptions.TransactionException;
 import ma.octo.assignement.repository.CompteRepository;
-import ma.octo.assignement.repository.OperationRepository;
 import ma.octo.assignement.repository.VirementRepository;
 import ma.octo.assignement.service.IServiceVirement;
 
@@ -37,12 +37,25 @@ public class ServiceVirementImpl implements IServiceVirement{
     	   compteRepository=cpCompteRepository;
 	}
     
+    
+	@Override
+	public List<Virement> findAllVirements() {
+        List<Virement> all = virementRepository.findAll();
+        
+        System.out.println("appel au lister virements");
+        if (CollectionUtils.isEmpty(all)) {
+            return null;
+        } else {
+            return all;
+        }
+	}
 
 	@Override
 	public Virement operationVirement(VirementDto virementDto)
 			throws CompteNonExistantException, TransactionException, SoldeDisponibleInsuffisantException {
 
 		Compte compteEmetteur     = compteRepository.findByNrCompte(virementDto.getNrCompteEmetteur());
+	
 		Compte compteBeneficiaire = compteRepository.findByNrCompte(virementDto.getNrCompteBeneficiaire());
 
 		if (compteEmetteur == null || compteBeneficiaire == null) {
@@ -103,5 +116,10 @@ public class ServiceVirementImpl implements IServiceVirement{
 		return virement;
 		
 	}
+
+
+
+
+
 
 }

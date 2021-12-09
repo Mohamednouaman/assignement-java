@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,79 +21,60 @@ import ma.octo.assignement.dto.VersementDto;
 import ma.octo.assignement.exceptions.CompteNonExistantException;
 import ma.octo.assignement.exceptions.SoldeDisponibleInsuffisantException;
 import ma.octo.assignement.exceptions.TransactionException;
-import ma.octo.assignement.repository.CompteRepository;
-import ma.octo.assignement.repository.UtilisateurRepository;
-import ma.octo.assignement.repository.VersementRepository;
 import ma.octo.assignement.service.IAutiService;
+import ma.octo.assignement.service.IServiceCompte;
+import ma.octo.assignement.service.IServiceUtilisateur;
 import ma.octo.assignement.service.IServiceVersement;
 
 @RestController
-@RequestMapping("/versement")
+@RequestMapping("/versements")
 public class VersementController {
-
 	
-
-
-
     Logger LOGGER = LoggerFactory.getLogger(VirementController.class);
 
     @Autowired
-    private VersementRepository   versementRepository;
+    private IServiceVersement   serviceVersement;    
     @Autowired
-    private IAutiService autiService;
+    private IAutiService autiService; 
     @Autowired
-    private IServiceVersement  serviceVersement;
-    
+    private IServiceCompte serviceCompte;    
     @Autowired
-    private CompteRepository compteRepository;
-    @Autowired
-    private UtilisateurRepository utilisateurRepository;
+    private IServiceUtilisateur serviceUtilisateur;
   
 
     @GetMapping("/lister_versements")
     List<Versement> loadAll() {
-        List<Versement> all = versementRepository.findAll();
+        List<Versement> listeVersement = serviceVersement.findAllVersement();
         
-
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+      return listeVersement;
+        
     }
 
     @GetMapping("lister_comptes")
     List<Compte> loadAllCompte() {
-        List<Compte> all = compteRepository.findAll();
+        List<Compte> listeComptes = serviceCompte.findAllComptes();
 
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+        return listeComptes;
     }
 
     @GetMapping("lister_utilisateurs")
     List<Utilisateur> loadAllUtilisateur() {
-        List<Utilisateur> all = utilisateurRepository.findAll();
+        List<Utilisateur> listeUtilisateurs = serviceUtilisateur.findAllUtilisateurs();
 
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+           return listeUtilisateurs;
     }
 
     @PostMapping("/executerVersements")
     @ResponseStatus(HttpStatus.CREATED)
     public void createTransaction(@RequestBody VersementDto versementDto)
             throws SoldeDisponibleInsuffisantException, CompteNonExistantException, TransactionException {
-           
-    	    serviceVersement.operationVersement(versementDto);     
+    	
+    	     serviceVersement.operationVersement(versementDto);     
     	
              autiService.auditOperation("Versement depuis " + versementDto.getNom_prenom_emetteur() + " vers " + versementDto
                         .getRibCompteBeneficiaire() + " d'un montant de " + versementDto.getMontantVersement()
                         .doubleValue(),EventType.VERSEMENT);
+             
     }
 	
 	

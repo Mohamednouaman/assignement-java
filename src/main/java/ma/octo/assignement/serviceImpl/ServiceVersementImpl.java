@@ -2,14 +2,17 @@ package ma.octo.assignement.serviceImpl;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import ma.octo.assignement.domain.Compte;
 import ma.octo.assignement.domain.Versement;
+import ma.octo.assignement.domain.Virement;
 import ma.octo.assignement.dto.VersementDto;
 import ma.octo.assignement.dto.VirementDto;
 import ma.octo.assignement.exceptions.CompteNonExistantException;
@@ -31,13 +34,27 @@ public class ServiceVersementImpl implements IServiceVersement {
 	
 	public ServiceVersementImpl(CompteRepository compteRepository,VersementRepository versementRepository) {
 		
+			
 		     this.compteRepository=compteRepository;
 		     this.versementRepository=versementRepository;
 	}
-
 	@Override
-	public Versement operationVersement(VersementDto versementDto) throws CompteNonExistantException, TransactionException {
+	public List<Versement> findAllVersement() {
+		
+        List<Versement> all = versementRepository.findAll();
+        
+        System.out.println("appel au lister virements");
+        if (CollectionUtils.isEmpty(all)) {
+            return null;
+        } else {
+            return all;
+        }
+	}
+    
+	@Override
+	public  Versement operationVersement(VersementDto versementDto) throws CompteNonExistantException, TransactionException {
 
+		
 		Compte compteBeneficiaire = compteRepository.findByRib(versementDto.getRibCompteBeneficiaire());
 
 		if (compteBeneficiaire == null) {
@@ -45,7 +62,7 @@ public class ServiceVersementImpl implements IServiceVersement {
 			throw new CompteNonExistantException("Compte non existant");
 
 		}
-		if (versementDto.getMontantVersement() == null || versementDto.getMontantVersement().doubleValue() == 0) {
+		if (versementDto.getMontantVersement()==null  || versementDto.getMontantVersement().doubleValue() ==0) {
 
 			System.out.println("Montant vide");
 
@@ -64,10 +81,14 @@ public class ServiceVersementImpl implements IServiceVersement {
 
 			throw new TransactionException("Motif vide");
 		}
-		compteBeneficiaire.setSolde(
-				new BigDecimal(compteBeneficiaire.getSolde().add(versementDto.getMontantVersement()).doubleValue()));
+	
+		
+			compteBeneficiaire.setSolde(
+					new BigDecimal(compteBeneficiaire.getSolde().add(versementDto.getMontantVersement()).doubleValue()));
 
-		compteRepository.save(compteBeneficiaire);
+			compteRepository.save(compteBeneficiaire);
+	
+
 
 		Versement versement = new Versement();
 		versement.setCompteBeneficiaire(compteBeneficiaire);
@@ -80,7 +101,8 @@ public class ServiceVersementImpl implements IServiceVersement {
 		
 		return versement;
 		
-	
-	}
+	 }
 
-}
+	
+
+ }

@@ -23,6 +23,7 @@ public class VersementMapper {
         versementDto.setRibCompteBeneficiaire(versement.getCompteBeneficiaire().getRib());
 
         return versementDto;
+        
 
     }
 

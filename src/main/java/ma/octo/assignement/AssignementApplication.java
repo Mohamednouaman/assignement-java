@@ -21,23 +21,25 @@ import ma.octo.assignement.domain.Virement;
 import ma.octo.assignement.domain.util.EventType;
 import ma.octo.assignement.dto.VersementDto;
 import ma.octo.assignement.dto.VirementDto;
+import ma.octo.assignement.exceptions.CompteNonExistantException;
+import ma.octo.assignement.exceptions.TransactionException;
 import ma.octo.assignement.repository.CompteRepository;
 import ma.octo.assignement.repository.OperationRepository;
 import ma.octo.assignement.repository.UtilisateurRepository;
 import ma.octo.assignement.repository.VersementRepository;
 import ma.octo.assignement.repository.VirementRepository;
 import ma.octo.assignement.service.IAutiService;
+import ma.octo.assignement.service.IServiceCompte;
+import ma.octo.assignement.service.IServiceUtilisateur;
 import ma.octo.assignement.service.IServiceVersement;
 import ma.octo.assignement.service.IServiceVirement;
 
 @SpringBootApplication
-@Transactional
-
 public class AssignementApplication implements CommandLineRunner {
 	@Autowired
-	private CompteRepository compteRepository;
+	private IServiceCompte serviceCompte;
 	@Autowired
-	private UtilisateurRepository utilisateurRepository;
+	private IServiceUtilisateur serviceUtilisateur;
 	@Autowired
 	private IServiceVirement serviceVirement;
 	@Autowired
@@ -59,7 +61,7 @@ public class AssignementApplication implements CommandLineRunner {
 		utilisateur1.setFirstname("first1");
 		utilisateur1.setGender("Male");
 
-		utilisateurRepository.save(utilisateur1);
+		serviceUtilisateur.saveUtilisateur(utilisateur1);
 
 		Utilisateur utilisateur2 = new Utilisateur();
 		utilisateur2.setUsername("user2");
@@ -67,15 +69,15 @@ public class AssignementApplication implements CommandLineRunner {
 		utilisateur2.setFirstname("first2");
 		utilisateur2.setGender("Female");
 
-		utilisateurRepository.save(utilisateur2);
+		serviceUtilisateur.saveUtilisateur(utilisateur2);
 
 		Compte compte1 = new Compte();
 		compte1.setNrCompte("010000A000001000");
 		compte1.setRib("RIB1");
-		compte1.setSolde(BigDecimal.valueOf(200000L));
+		compte1.setSolde(BigDecimal.valueOf(333333330L));
 		compte1.setUtilisateur(utilisateur1);
 
-		compteRepository.save(compte1);
+		serviceCompte.saveCompte(compte1);
 
 		Compte compte2 = new Compte();
 		compte2.setNrCompte("010000B025001000");
@@ -83,7 +85,7 @@ public class AssignementApplication implements CommandLineRunner {
 		compte2.setSolde(BigDecimal.valueOf(140000L));
 		compte2.setUtilisateur(utilisateur2);
 
-		compteRepository.save(compte2);
+		serviceCompte.saveCompte(compte2);
 
 //		Virement v = new Virement();
 //		v.setMontantOperation(BigDecimal.TEN);
@@ -94,29 +96,30 @@ public class AssignementApplication implements CommandLineRunner {
 
      
        //Effectuer un virement 
-		
-		VirementDto virementDto = new VirementDto();
-		virementDto.setNrCompteBeneficiaire("010000B025001000");
-		virementDto.setNrCompteEmetteur("010000A000001000");
-		virementDto.setMontantVirement(new BigDecimal(3655.4));
-		virementDto.setMotif("Motif virement");
-		virementDto.setDate(new Date());
 
-		serviceVirement.operationVirement(virementDto);
+			VirementDto virementDto = new VirementDto();
+			virementDto.setNrCompteBeneficiaire("010000B025001000");
+			virementDto.setNrCompteEmetteur("010000A000001000");
+			virementDto.setMontantVirement(new BigDecimal(3655.4));
+			virementDto.setMotif("Motif virement");
+			virementDto.setDate(new Date());
+
+			serviceVirement.operationVirement(virementDto);
+			
+	        autiService.auditOperation("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
+	                   .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement().doubleValue()
+	                   ,EventType.VIREMENT);
 		
-        autiService.auditOperation("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
-                   .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement().doubleValue()
-                   ,EventType.VIREMENT);
-        
          //Effectuer un versement 
         
 		VersementDto versementDto = new VersementDto();
 		versementDto.setDate(new Date());
-		versementDto.setMontantVersement(new BigDecimal(2333444.5));
+		versementDto.setMontantVersement(new BigDecimal(100));
 		versementDto.setMotif("Motif versement");
 		versementDto.setNom_prenom_emetteur("Mohamed NOUAMAN");
 		versementDto.setRibCompteBeneficiaire("RIB1");
 
+		
 		serviceVersement.operationVersement(versementDto);
 		
         autiService.auditOperation("Versement depuis " + versementDto.getNom_prenom_emetteur() + " vers " + versementDto

@@ -1,14 +1,11 @@
 package ma.octo.assignement.web;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,64 +21,50 @@ import ma.octo.assignement.dto.VirementDto;
 import ma.octo.assignement.exceptions.CompteNonExistantException;
 import ma.octo.assignement.exceptions.SoldeDisponibleInsuffisantException;
 import ma.octo.assignement.exceptions.TransactionException;
-import ma.octo.assignement.repository.CompteRepository;
-import ma.octo.assignement.repository.UtilisateurRepository;
-import ma.octo.assignement.repository.VirementRepository;
 import ma.octo.assignement.service.IAutiService;
+import ma.octo.assignement.service.IServiceCompte;
+import ma.octo.assignement.service.IServiceUtilisateur;
 import ma.octo.assignement.service.IServiceVirement;
 
 @RestController
-@RequestMapping("/virements")//added by me
+@RequestMapping("/virements")
 class VirementController {
-
-
 
     Logger LOGGER = LoggerFactory.getLogger(VirementController.class);
 
-    @Autowired
-    private VirementRepository   virementRepository;
     @Autowired
     private IAutiService autiService;
     @Autowired
     private IServiceVirement  serviceVirement;
     @Autowired
-    private CompteRepository compteRepository;
+    private IServiceCompte serviceCompte;    
     @Autowired
-    private UtilisateurRepository utilisateurRepository;
+    private IServiceUtilisateur serviceUtilisateur;
   
 
     @GetMapping("/lister_virements")
     List<Virement> loadAll() {
-        List<Virement> all = virementRepository.findAll();
-        
-        System.out.println("appel au lister virements");
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+    	
+        List<Virement> listeVirements =serviceVirement.findAllVirements();
+        return listeVirements;
     }
 
     @GetMapping("/lister_comptes")
     List<Compte> loadAllCompte() {
-        List<Compte> all = compteRepository.findAll();
-
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+    	
+    	List<Compte> listeComptes=serviceCompte.findAllComptes();
+    	
+    	return listeComptes;
+    
     }
 
     @GetMapping("/lister_utilisateurs")
     List<Utilisateur> loadAllUtilisateur() {
-        List<Utilisateur> all = utilisateurRepository.findAll();
-
-        if (CollectionUtils.isEmpty(all)) {
-            return null;
-        } else {
-            return all;
-        }
+    	
+    	List<Utilisateur>  listeUtilisateurs=serviceUtilisateur.findAllUtilisateurs();
+    	
+    	return listeUtilisateurs;
+       
     }
 
     @PostMapping("/executerVirements")
@@ -94,6 +77,7 @@ class VirementController {
              autiService.auditOperation("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
                         .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement()
                         .doubleValue(),EventType.VIREMENT);
+   
     }
 
 }
